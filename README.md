@@ -21,7 +21,7 @@ Before using this application, ensure the following prerequisites are met:
      ```
 
 3. **Python**:
-   - Python 3.8 or later installed.
+   - Python 3.11 or later installed.
 
 4. **Required Libraries**:
    - All required Python libraries are listed in `requirements.txt` in the repository’s root directory.
@@ -51,7 +51,7 @@ Before using this application, ensure the following prerequisites are met:
 3. Upload your documents and interact with them through the chat interface.
 
 ## Notes
-- Ensure Ollama’s backend server is running and configured correctly.
+- Ensure Ollama’s backend server is running and configured correctly by visting `http://localhost:11434` and have ```Ollama is running```message on the webpage.
 - If you encounter any issues, check your Ollama and Python setup or refer to the logs for debugging.
 
 Enjoy exploring and chatting with your documents!

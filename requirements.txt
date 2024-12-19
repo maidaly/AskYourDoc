@@ -1,0 +1,8 @@
+langchain
+langchain_community
+langchain_ollama
+streamlit
+ollama
+pdfplumber
+pypdf
+chromadb

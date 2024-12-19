@@ -1,7 +1,5 @@
 # AskYourDoc
 
-# README: RAG Pipeline for Document Chat
-
 ## Introduction
 This repository implements a Retrieval-Augmented Generation (RAG) pipeline to interact with documents through a Streamlit-based web application. The app leverages Ollama models for text generation and embedding creation, enabling effective retrieval and conversation with your documents.
 

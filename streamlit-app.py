@@ -24,7 +24,7 @@ from langchain_ollama.chat_models import ChatOllama
 from langchain_core.runnables import RunnablePassthrough
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from typing import List, Tuple, Dict, Any, Optional
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, UnstructuredWordDocumentLoader
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 import chromadb.api
@@ -85,8 +85,11 @@ def read_files_and_split(file_uploads: list[UploadedFile]) -> list:
                 f.write(file_upload.getvalue())
                 logger.info(f"File saved to temporary path: {path}")
                 
-                # Load the PDF
-                loader = PyPDFLoader(path)
+                if path.endswith(".pdf"):
+                    # Load the PDF
+                    loader = PyPDFLoader(path)
+                elif path.endswith(".docx"):
+                    loader = UnstructuredWordDocumentLoader(path)
                 data = loader.load()
                 logger.info(f"Loaded {len(data)} documents from {file_upload.name}")
 
@@ -315,7 +318,7 @@ def main() -> None:
         # Regular file upload with unique key
         file_uploads = col1.file_uploader(
             "Upload PDF files ↓", 
-            type="pdf", 
+            type=["pdf","docx"], 
             accept_multiple_files=True,  # Allow multiple file uploads
             key="pdf_uploader"
         )

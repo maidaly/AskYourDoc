@@ -27,7 +27,8 @@ from typing import List, Tuple, Dict, Any, Optional
 from langchain_community.document_loaders import PyPDFLoader
 import chromadb.api
 
-chromadb.api.client.SharedSystemClient.clear_system_cache()
+# chroma_client = chromadb.Client()
+# collection = chroma_client.create_collection(name="myRAG")
 
 # Set protobuf environment variable to avoid error messages
 # This might cause some issues with latency but it's a tradeoff
@@ -88,7 +89,8 @@ def create_vector_db(file_upload) -> Chroma:
     vector_db = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
-        collection_name="myRAG"
+        collection_name="myRAG",
+        persist_directory="./app"
     )
     logger.info("Vector DB created")
 

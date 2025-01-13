@@ -36,7 +36,7 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 # Streamlit page configuration
 st.set_page_config(
-    page_title="Ollama PDF RAG Streamlit UI",
+    page_title=" PDF RAG Playground",
     page_icon="🎈",
     layout="wide",
     initial_sidebar_state="collapsed",

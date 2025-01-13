@@ -1,5 +1,5 @@
 notebooks/*
-src/utils
+src/utils/Data
 app
 __pycache__/
 chroma_db

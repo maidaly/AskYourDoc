@@ -25,6 +25,8 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from typing import List, Tuple, Dict, Any, Optional
 from langchain_community.document_loaders import PyPDFLoader
+from streamlit.runtime.uploaded_file_manager import UploadedFile
+
 import chromadb.api
 
 # chroma_client = chromadb.Client()
@@ -36,7 +38,7 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 # Streamlit page configuration
 st.set_page_config(
-    page_title=" PDF RAG Playground",
+    page_title="Ollama PDF RAG Streamlit UI",
     page_icon="🎈",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -59,44 +61,93 @@ def extract_model_names(models_info):
         # models_dicts = [asdict(model) for model in models_info]
         # print(models_dicts)
         return tuple(models.model for models in models_info)
-
-def create_vector_db(file_upload) -> Chroma:
+    
+def read_files_and_split(file_uploads: list[UploadedFile]) -> list:
     """
-    Create a vector database from an uploaded PDF file.
+    Read multiple files, extract their text, and split them into chunks.
 
     Args:
-        file_upload (st.UploadedFile): Streamlit file upload object containing the PDF.
+        file_uploads (list[st.UploadedFile]): List of Streamlit file upload objects containing PDFs.
+
+    Returns:
+        list: A list of document chunks.
+    """
+    logger.info("Reading files and splitting into chunks")
+    temp_dir = tempfile.mkdtemp()
+    all_chunks = []
+
+    try:
+        for file_upload in file_uploads:
+            logger.info(f"Processing file: {file_upload.name}")
+            # Save file temporarily
+            path = os.path.join(temp_dir, file_upload.name)
+            with open(path, "wb") as f:
+                f.write(file_upload.getvalue())
+                logger.info(f"File saved to temporary path: {path}")
+                
+                # Load the PDF
+                loader = PyPDFLoader(path)
+                data = loader.load()
+                logger.info(f"Loaded {len(data)} documents from {file_upload.name}")
+
+                # Split the text into chunks
+                text_splitter = RecursiveCharacterTextSplitter(chunk_size=7500, chunk_overlap=100)
+                chunks = text_splitter.split_documents(data)
+                all_chunks.extend(chunks)  # Accumulate chunks
+
+        logger.info(f"Total chunks created: {len(all_chunks)}")
+        return all_chunks
+
+    finally:
+        # Clean up temporary files
+        shutil.rmtree(temp_dir)
+        logger.info(f"Temporary directory {temp_dir} removed")
+
+
+def create_vector_store(chunks: list, collection_name: str = "myRAG", persist_directory: str = "./app") -> Chroma:
+    """
+    Create a vector store from document chunks.
+
+    Args:
+        chunks (list): List of document chunks.
+        collection_name (str): Name of the vector store collection.
+        persist_directory (str): Path to save the vector store.
 
     Returns:
         Chroma: A vector store containing the processed document chunks.
     """
-    logger.info(f"Creating vector DB from file upload: {file_upload.name}")
-    temp_dir = tempfile.mkdtemp()
-
-    path = os.path.join(temp_dir, file_upload.name)
-    with open(path, "wb") as f:
-        f.write(file_upload.getvalue())
-        logger.info(f"File saved to temporary path: {path}")
-        loader = PyPDFLoader(path)
-        data = loader.load()
-
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=7500, chunk_overlap=100)
-    chunks = text_splitter.split_documents(data)
-    logger.info("Document split into chunks")
-
-    # Updated embeddings configuration
+    logger.info("Creating vector store")
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
     vector_db = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
-        collection_name="myRAG",
-        persist_directory="./app"
+        collection_name=collection_name,
+        persist_directory=persist_directory
     )
-    logger.info("Vector DB created")
-
-    shutil.rmtree(temp_dir)
-    logger.info(f"Temporary directory {temp_dir} removed")
+    logger.info("Vector store created successfully")
     return vector_db
+
+
+def create_vector_db(file_uploads: list[UploadedFile]) -> Chroma:
+    """
+    Create a vector database from multiple uploaded PDF files.
+
+    Args:
+        file_uploads (list[st.UploadedFile]): List of Streamlit file upload objects containing PDFs.
+
+    Returns:
+        Chroma: A vector store containing the processed document chunks.
+    """
+    logger.info("Creating vector DB from file uploads")
+    
+    # Step 1: Read files and split them into chunks
+    chunks = read_files_and_split(file_uploads)
+
+    # Step 2: Create the vector store from chunks
+    vector_db = create_vector_store(chunks)
+
+    return vector_db
+
 
 
 def process_question(question: str, vector_db: Chroma, selected_model: str) -> str:
@@ -262,19 +313,20 @@ def main() -> None:
             st.error("Sample PDF file not found in the current directory.")
     else:
         # Regular file upload with unique key
-        file_upload = col1.file_uploader(
-            "Upload a PDF file ↓", 
+        file_uploads = col1.file_uploader(
+            "Upload PDF files ↓", 
             type="pdf", 
-            accept_multiple_files=False,
+            accept_multiple_files=True,  # Allow multiple file uploads
             key="pdf_uploader"
         )
 
-        if file_upload:
-            if st.session_state["vector_db"] is None:
-                with st.spinner("Processing uploaded PDF..."):
-                    st.session_state["vector_db"] = create_vector_db(file_upload)
-                    # pdf_pages = extract_all_pages_as_images(file_upload)
-                    # st.session_state["pdf_pages"] = pdf_pages
+        if file_uploads:  # Check if files were uploaded
+            if st.session_state.get("vector_db") is None:  # Check if the vector DB is already created
+                with st.spinner("Processing uploaded PDFs..."):
+                    # Process multiple files to create the vector DB
+                    st.session_state["vector_db"] = create_vector_db(file_uploads)
+                    st.success("Vector database created successfully!")
+
 
     # Display PDF if pages are available
     # if "pdf_pages" in st.session_state and st.session_state["pdf_pages"]:

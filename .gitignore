@@ -1,3 +1,6 @@
+notebooks/*
+src/utils/Data
+app
 __pycache__/
 .vscode
 chroma_db

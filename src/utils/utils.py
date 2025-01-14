@@ -3,6 +3,20 @@ import tempfile
 import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
 from utils.logging_utils import logger
+from langchain_community.document_loaders import UnstructuredWordDocumentLoader
+
+
+def read_uploaded_docx(file_upload) -> str:
+    logger.info(f"Processing file: {file_upload.name}")
+    # Save file temporarily
+    temp_dir = tempfile.mkdtemp()
+    path = os.path.join(temp_dir, file_upload.name)
+    with open(path, "wb") as f:
+        f.write(file_upload.getvalue())
+        logger.info(f"File saved to temporary path: {path}")
+        loader = UnstructuredWordDocumentLoader(path)
+        data = loader.load()
+        logger.info(f"Loaded {len(data)} documents from {file_upload.name}")
 
 def read_uploaded_pdf(file_upload) -> str:
     """

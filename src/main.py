@@ -8,7 +8,7 @@ from langchain_core.runnables import RunnablePassthrough
 import chromadb.api
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from src.rag_manger.rag import Rag
-from src.utils.utils import read_sample_pdf, read_uploaded_pdf
+from src.utils.utils import *
 from src.utils.logging_utils import logger
 from src.streamlit_manger.pdf_handler import PDFHandler
 from src.streamlit_manger.session_handler import SessionStateManager
@@ -65,9 +65,13 @@ def main():
             key="pdf_uploader"
         )
         if file_upload:
+            file_name = file_upload.name
             if st.session_state["vector_db"] is None:
                 with st.spinner("Processing uploaded PDF..."):
-                    data = read_uploaded_pdf(file_upload)
+                    if file_name.endswith(".pdf"):
+                        data = read_uploaded_pdf(file_upload)
+                    elif file_name.endswith(".docx"):
+                        data = read_uploaded_docx(file_upload)
                     vector_db=rag.create_vector_db(data)
                     session.set("vector_db", vector_db)
         # Delete collection button

@@ -17,6 +17,7 @@ def read_uploaded_docx(file_upload) -> str:
         loader = UnstructuredWordDocumentLoader(path)
         data = loader.load()
         logger.info(f"Loaded {len(data)} documents from {file_upload.name}")
+    return data
 
 def read_uploaded_pdf(file_upload) -> str:
     """

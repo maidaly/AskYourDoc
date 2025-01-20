@@ -25,7 +25,7 @@ def main():
     Main function to run the Streamlit application.
     """
 
-    st.subheader("🧠 Ollama PDF RAG playground", divider="gray", anchor=False)
+    st.subheader("📖 Ask your Document", divider="gray", anchor=False)
     models_info = ollama.list()
     print(models_info)
     # Create layout
@@ -59,19 +59,20 @@ def main():
     else:
         # Regular file upload with unique key
         file_upload = col1.file_uploader(
-            "Upload a PDF file ↓", 
-            type="pdf", 
-            accept_multiple_files=False,
-            key="pdf_uploader"
+            "Upload a file ↓", 
+            type=["pdf", "docx", "txt"],
+            accept_multiple_files=True,
+            key="file_uploader"
         )
         if file_upload:
-            file_name = file_upload.name
+            print(file_upload)
+            file_name = file_upload[0].name
             if st.session_state["vector_db"] is None:
-                with st.spinner("Processing uploaded PDF..."):
+                with st.spinner("Processing uploaded document..."):
                     if file_name.endswith(".pdf"):
-                        data = read_uploaded_pdf(file_upload)
+                        data = read_uploaded_pdf(file_upload[0])
                     elif file_name.endswith(".docx"):
-                        data = read_uploaded_docx(file_upload)
+                        data = read_uploaded_docx(file_upload[0])
                     vector_db=rag.create_vector_db(data)
                     session.set("vector_db", vector_db)
         # Delete collection button

@@ -8,7 +8,7 @@ from langchain_core.runnables import RunnablePassthrough
 import chromadb.api
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from src.rag_manger.rag import Rag
-from src.utils.utils import read_sample_pdf, read_uploaded_pdf
+from src.utils.utils import *
 from src.utils.logging_utils import logger
 from src.streamlit_manger.pdf_handler import PDFHandler
 from src.streamlit_manger.session_handler import SessionStateManager
@@ -25,7 +25,7 @@ def main():
     Main function to run the Streamlit application.
     """
 
-    st.subheader("🧠 Ollama PDF RAG playground", divider="gray", anchor=False)
+    st.subheader("📖 Ask your Document", divider="gray", anchor=False)
     models_info = ollama.list()
     print(models_info)
     # Create layout
@@ -59,15 +59,20 @@ def main():
     else:
         # Regular file upload with unique key
         file_upload = col1.file_uploader(
-            "Upload a PDF file ↓", 
-            type="pdf", 
-            accept_multiple_files=False,
-            key="pdf_uploader"
+            "Upload a file ↓", 
+            type=["pdf", "docx", "txt"],
+            accept_multiple_files=True,
+            key="file_uploader"
         )
         if file_upload:
+            print(file_upload)
+            file_name = file_upload[0].name
             if st.session_state["vector_db"] is None:
-                with st.spinner("Processing uploaded PDF..."):
-                    data = read_uploaded_pdf(file_upload)
+                with st.spinner("Processing uploaded document..."):
+                    if file_name.endswith(".pdf"):
+                        data = read_uploaded_pdf(file_upload[0])
+                    elif file_name.endswith(".docx"):
+                        data = read_uploaded_docx(file_upload[0])
                     vector_db=rag.create_vector_db(data)
                     session.set("vector_db", vector_db)
         # Delete collection button

@@ -6,3 +6,6 @@ chroma_db
 *.pyc
 *.pyo
 *.pyd
+src/evaluation/SQuaAD
+src/evaluation/dev-v1.1.json
+src/evaluation/train-v1.1.json

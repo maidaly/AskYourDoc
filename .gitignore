@@ -9,3 +9,11 @@ chroma_db
 src/evaluation/SQuaAD
 src/evaluation/dev-v1.1.json
 src/evaluation/train-v1.1.json
+src/visionRAG/local_clip_model/config.json
+src/visionRAG/local_clip_model/model.safetensors
+src/visionRAG/local_clip_processor/merges.txt
+src/visionRAG/local_clip_processor/preprocessor_config.json
+src/visionRAG/local_clip_processor/special_tokens_map.json
+src/visionRAG/local_clip_processor/tokenizer_config.json
+src/visionRAG/local_clip_processor/tokenizer.json
+src/visionRAG/local_clip_processor/vocab.json

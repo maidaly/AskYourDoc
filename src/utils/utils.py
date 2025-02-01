@@ -1,4 +1,5 @@
 import os
+import subprocess
 import tempfile
 import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
@@ -57,14 +58,17 @@ def read_sample_pdf(sample_path:str) -> str:
     else:
         st.error("Sample PDF file not found in the current directory.")
 
-def extract_model_names(models_info):
+def get_ollama_models():
     """
-    Extract the names of the available models.
-
-    Args:
-        models_info: The list of available models.
+    Get a list of Ollama models.
 
     Returns:
-        The names of the available models.
+        A list of Ollama models.
     """
-    return tuple(item.model for item in models_info if hasattr(item, 'model'))
+    try:
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+        models = [line.split()[0] for line in result.stdout.split("\n") if line]
+        return models
+    except Exception as e:
+        st.error(f"Error fetching models: {e}")
+        return []

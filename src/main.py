@@ -82,19 +82,19 @@ def main():
 
     # Chat interface
     with col2:
-        st.subheader("💬 Chat with the Assistant", divider="gray", anchor=False)
+        st.subheader("💬 Start Chatting .... ", divider="gray", anchor=False)
         message_container = st.container(height=500, border=True)
 
         # Display chat history
         for i, message in enumerate(st.session_state["messages"]):
-            avatar = "🤖" if message["role"] == "assistant" else "😎"
+            avatar = "🤖" if message["role"] == "assistant" else "⌨"
             with message_container.chat_message(message["role"], avatar=avatar):
                 st.markdown(message["content"])
         if prompt := st.chat_input("Enter a prompt here...", key="chat_input"):
             try:
                 # Add user message to chat
                 st.session_state["messages"].append({"role": "user", "content": prompt})
-                with message_container.chat_message("user", avatar="😎"):
+                with message_container.chat_message("user", avatar="⌨"):
                     st.markdown(prompt)
                 with message_container.chat_message("assistant", avatar="🤖"):
                     with st.spinner(":green[processing...]"):
